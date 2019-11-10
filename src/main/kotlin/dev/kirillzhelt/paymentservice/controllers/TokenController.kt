@@ -5,6 +5,7 @@ import dev.kirillzhelt.paymentservice.model.PaymentInfo
 import dev.kirillzhelt.paymentservice.model.Response
 import dev.kirillzhelt.paymentservice.model.Token
 import org.springframework.web.bind.annotation.*
+import java.util.*
 import java.util.concurrent.atomic.AtomicLong
 import javax.validation.Valid
 
@@ -49,9 +50,8 @@ class TokenController {
     }
 
     private fun generateToken(): String {
-        // TODO: generate token (maybe by certain params)
+        return UUID.randomUUID().toString()
 
-        return "token"
     }
 
     private fun sendToService(serviceName: String, token: Token) {
