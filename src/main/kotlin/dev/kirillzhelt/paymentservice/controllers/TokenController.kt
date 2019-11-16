@@ -19,6 +19,7 @@ class TokenController {
             Greeting(counter.incrementAndGet(), "Hello, $name $id")
 
     // curl --request POST --url "http://localhost:8080/token/service/method123" --header "content-type: application/json;charset=utf-8" --data "{\"date_from\":\"12-12-2000\", \"date_to\":\"12-12-2019\"}"
+    // curl --request POST --url "http://cryptic-beach-05943.herokuapp.com/token/service/method123" --header "content-type: application/json;charset=utf-8" --data "{\"date_from\":\"12-12-2000\", \"date_to\":\"12-12-2019\"}"
 
     @PostMapping("/token/{service}/{method}")
     fun token(@PathVariable(value = "service") serviceName: String, @PathVariable(value = "method") methodName: String,
@@ -46,7 +47,10 @@ class TokenController {
     private fun checkMethod(serviceName: String, methodName: String): Boolean {
         // TODO: check method in the registry
 
-        return true
+        return when ((0..1).random()) {
+            0 -> false
+            else -> true
+        }
     }
 
     private fun generateToken(): String {
