@@ -37,7 +37,7 @@ class TokenController {
             sendToService(serviceName, tokenForService)
 
             // token for client
-            return Response(tokenString)
+            return Response(token = tokenString, statusCode = 201)
         } else {
             return Response(statusCode = 404, statusMessage = "Invalid method")
         }
