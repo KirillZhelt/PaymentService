@@ -1,10 +1,9 @@
 package dev.kirillzhelt.paymentservice.controllers
 
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.fasterxml.jackson.module.kotlin.readValue
 import dev.kirillzhelt.paymentservice.SERVICE_REGISTRY
-import dev.kirillzhelt.paymentservice.model.Greeting
-import dev.kirillzhelt.paymentservice.model.PaymentInfo
-import dev.kirillzhelt.paymentservice.model.Response
-import dev.kirillzhelt.paymentservice.model.Token
+import dev.kirillzhelt.paymentservice.model.*
 import org.springframework.web.bind.annotation.*
 import java.net.HttpURLConnection
 import java.net.URL
@@ -47,29 +46,25 @@ class TokenController {
 
     }
 
-    // voiteshenkolab3registerservice.azurewebsites.net/WebService.asmx/IsMethodExistsName/IsMethodExistsName?serviceName=Money&methodName=Add
+    // voiteshenkolab3registerservice.azurewebsites.net/WebService.asmx/IsMethodExistsName?serviceName=Money&methodName=Add
 
     private fun checkMethod(serviceName: String, methodName: String): Boolean {
-        // TODO: check method in the registry
-
         val urlString = "$SERVICE_REGISTRY?serviceName=$serviceName&methodName=$methodName"
 
         with (URL(urlString).openConnection() as HttpURLConnection) {
             requestMethod = "GET"
 
-            inputStream.bufferedReader().use {
-                it.lines().forEach { line ->
-                    println(line)
-                }
-            }
-        }
+            val jsonResponseString = inputStream.bufferedReader().readLine()
 
-        return true
+            val mapper = jacksonObjectMapper()
+            val serviceRegistryResponse: ServiceRegistryResponse = mapper.readValue(jsonResponseString)
+
+            return serviceRegistryResponse.methodExists
+        }
     }
 
     private fun generateToken(): String {
         return UUID.randomUUID().toString()
-
     }
 
     // curl --request POST --url "http://voiteshenko-lab3-plane-ticket-service.azurewebsites.net/PlaneTicketService.svc/setToken/methodName" --header "content-type: application/json;charset=utf-8" --data "{\"tokenValue\":\"token1234\", \"date_from\":\"12-12-2000\",\"date_to\":\"12-12-2000\"}"
