@@ -1,10 +1,13 @@
 package dev.kirillzhelt.paymentservice.controllers
 
+import dev.kirillzhelt.paymentservice.SERVICE_REGISTRY
 import dev.kirillzhelt.paymentservice.model.Greeting
 import dev.kirillzhelt.paymentservice.model.PaymentInfo
 import dev.kirillzhelt.paymentservice.model.Response
 import dev.kirillzhelt.paymentservice.model.Token
 import org.springframework.web.bind.annotation.*
+import java.net.HttpURLConnection
+import java.net.URL
 import java.util.*
 import java.util.concurrent.atomic.AtomicLong
 import javax.validation.Valid
@@ -44,19 +47,32 @@ class TokenController {
 
     }
 
+    // voiteshenkolab3registerservice.azurewebsites.net/WebService.asmx/IsMethodExistsName/IsMethodExistsName?serviceName=Money&methodName=Add
+
     private fun checkMethod(serviceName: String, methodName: String): Boolean {
         // TODO: check method in the registry
 
-        return when ((0..1).random()) {
-            0 -> false
-            else -> true
+        val urlString = "$SERVICE_REGISTRY?serviceName=$serviceName&methodName=$methodName"
+
+        with (URL(urlString).openConnection() as HttpURLConnection) {
+            requestMethod = "GET"
+
+            inputStream.bufferedReader().use {
+                it.lines().forEach { line ->
+                    println(line)
+                }
+            }
         }
+
+        return true
     }
 
     private fun generateToken(): String {
         return UUID.randomUUID().toString()
 
     }
+
+    // curl --request POST --url "http://voiteshenko-lab3-plane-ticket-service.azurewebsites.net/PlaneTicketService.svc/setToken/methodName" --header "content-type: application/json;charset=utf-8" --data "{\"tokenValue\":\"token1234\", \"date_from\":\"12-12-2000\",\"date_to\":\"12-12-2000\"}"
 
     private fun sendToService(serviceName: String, token: Token) {
         // TODO: send token to service
