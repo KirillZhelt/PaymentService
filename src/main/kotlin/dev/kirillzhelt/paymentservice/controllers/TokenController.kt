@@ -1,10 +1,12 @@
 package dev.kirillzhelt.paymentservice.controllers
 
-import dev.kirillzhelt.paymentservice.model.Greeting
-import dev.kirillzhelt.paymentservice.model.PaymentInfo
-import dev.kirillzhelt.paymentservice.model.Response
-import dev.kirillzhelt.paymentservice.model.Token
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.fasterxml.jackson.module.kotlin.readValue
+import dev.kirillzhelt.paymentservice.SERVICE_REGISTRY
+import dev.kirillzhelt.paymentservice.model.*
 import org.springframework.web.bind.annotation.*
+import java.net.HttpURLConnection
+import java.net.URL
 import java.util.*
 import java.util.concurrent.atomic.AtomicLong
 import javax.validation.Valid
@@ -44,19 +46,28 @@ class TokenController {
 
     }
 
-    private fun checkMethod(serviceName: String, methodName: String): Boolean {
-        // TODO: check method in the registry
+    // voiteshenkolab3registerservice.azurewebsites.net/WebService.asmx/IsMethodExistsName?serviceName=Money&methodName=Add
 
-        return when ((0..1).random()) {
-            0 -> false
-            else -> true
+    private fun checkMethod(serviceName: String, methodName: String): Boolean {
+        val urlString = "$SERVICE_REGISTRY?serviceName=$serviceName&methodName=$methodName"
+
+        with (URL(urlString).openConnection() as HttpURLConnection) {
+            requestMethod = "GET"
+
+            val jsonResponseString = inputStream.bufferedReader().readLine()
+
+            val mapper = jacksonObjectMapper()
+            val serviceRegistryResponse: ServiceRegistryResponse = mapper.readValue(jsonResponseString)
+
+            return serviceRegistryResponse.methodExists
         }
     }
 
     private fun generateToken(): String {
         return UUID.randomUUID().toString()
-
     }
+
+    // curl --request POST --url "http://voiteshenko-lab3-plane-ticket-service.azurewebsites.net/PlaneTicketService.svc/setToken/methodName" --header "content-type: application/json;charset=utf-8" --data "{\"tokenValue\":\"token1234\", \"date_from\":\"12-12-2000\",\"date_to\":\"12-12-2000\"}"
 
     private fun sendToService(serviceName: String, token: Token) {
         // TODO: send token to service
