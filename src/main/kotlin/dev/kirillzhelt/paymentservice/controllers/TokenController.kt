@@ -78,7 +78,7 @@ class TokenController {
     // curl --request POST --url "http://voiteshenko-lab3-plane-ticket-service.azurewebsites.net/PlaneTicketService.svc/setToken/methodName" --header "content-type: application/json;charset=utf-8" --data "{\"tokenValue\":\"token1234\", \"date_from\":\"12-12-2000\",\"date_to\":\"12-12-2000\"}"
 
     private fun sendToService(serviceName: String, methodName: String, token: Token) {
-        val serviceUrl = "${SERVICES.getValue(serviceName)}/$methodName}"
+        val serviceUrl = "${SERVICES.getValue(serviceName)}/$methodName"
 
         val tokenJsonString = mapper.writeValueAsString(token)
 
