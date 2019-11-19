@@ -2,8 +2,13 @@ package dev.kirillzhelt.paymentservice.controllers
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
+import dev.kirillzhelt.paymentservice.SERVICES
 import dev.kirillzhelt.paymentservice.SERVICE_REGISTRY
 import dev.kirillzhelt.paymentservice.model.*
+import okhttp3.RequestBody.Companion.toRequestBody
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.OkHttpClient
+import okhttp3.Request
 import org.springframework.web.bind.annotation.*
 import java.net.HttpURLConnection
 import java.net.URL
@@ -14,6 +19,10 @@ import javax.validation.Valid
 
 @RestController
 class TokenController {
+
+    private val client = OkHttpClient()
+    private val mapper = jacksonObjectMapper()
+
     val counter = AtomicLong()
 
     @GetMapping("/greeting/{id}")
@@ -34,9 +43,9 @@ class TokenController {
         if (checkMethod(serviceName, methodName)) {
             val tokenString = generateToken()
 
-            val tokenForService = Token(tokenString, paymentInfo, methodName)
+            val tokenForService = Token(tokenString, paymentInfo.dateFrom, paymentInfo.dateTo)
 
-            sendToService(serviceName, tokenForService)
+            sendToService(serviceName, methodName, tokenForService)
 
             // token for client
             return Response(token = tokenString, statusCode = 201)
@@ -56,7 +65,6 @@ class TokenController {
 
             val jsonResponseString = inputStream.bufferedReader().readLine()
 
-            val mapper = jacksonObjectMapper()
             val serviceRegistryResponse: ServiceRegistryResponse = mapper.readValue(jsonResponseString)
 
             return serviceRegistryResponse.methodExists
@@ -69,9 +77,23 @@ class TokenController {
 
     // curl --request POST --url "http://voiteshenko-lab3-plane-ticket-service.azurewebsites.net/PlaneTicketService.svc/setToken/methodName" --header "content-type: application/json;charset=utf-8" --data "{\"tokenValue\":\"token1234\", \"date_from\":\"12-12-2000\",\"date_to\":\"12-12-2000\"}"
 
-    private fun sendToService(serviceName: String, token: Token) {
-        // TODO: send token to service
+    private fun sendToService(serviceName: String, methodName: String, token: Token) {
+        val serviceUrl = "${SERVICES.getValue(serviceName)}/$methodName}"
 
+        val tokenJsonString = mapper.writeValueAsString(token)
+
+        val requestBody = tokenJsonString.toRequestBody(JSON)
+
+        val request = Request.Builder()
+                .url(serviceUrl)
+                .post(requestBody)
+                .build()
+
+        client.newCall(request).execute()
+//        println(client.newCall(request).execute().body?.string())
     }
 
+    companion object {
+        private val JSON = "application/json; charset=utf-8".toMediaType()
+    }
 }

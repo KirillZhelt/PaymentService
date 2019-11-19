@@ -6,9 +6,10 @@ data class Token(
         @JsonProperty("token")
         val token: String,
 
-        @JsonProperty("payment_info")
-        val paymentInfo: PaymentInfo,
+        @JsonProperty("date_from")
+        val dateFrom: String,
 
-        @JsonProperty("method_name")
-        val methodName: String
+        @JsonProperty("date_to")
+        val dateTo: String
+
 )
